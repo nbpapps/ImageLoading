@@ -38,7 +38,6 @@ class UIImageLoader {
         
         //4
         if let token = token {
-//            uuidMap[imageView] = token
             setToken(token, for: imageView)
         }
     }
