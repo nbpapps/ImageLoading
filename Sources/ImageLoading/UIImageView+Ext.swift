@@ -8,7 +8,7 @@
 import UIKit
 
 extension UIImageView {
-    
+
     public func loadImage(at url : URL) {
         UIImageLoader.loader.load(url, for: self)
     }

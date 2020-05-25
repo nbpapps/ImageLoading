@@ -8,7 +8,8 @@
 
 import UIKit
 
-class UIImageLoader {
+
+class UIImageLoader  {
     internal static let loader = UIImageLoader()
     
     private let imageLoader = ImageLoader()
