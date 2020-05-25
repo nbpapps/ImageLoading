@@ -8,7 +8,14 @@
 
 import UIKit
 
-class ImageLoader {
+
+protocol ImageLoading {
+    func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID?
+    func cancelLoad(for uuid : UUID)
+
+}
+
+class ImageLoader : ImageLoading{
     private var loadedImages = [URL:UIImage]()
     private var runningRequests = [UUID : URLSessionDataTask]()
     private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
@@ -29,7 +36,7 @@ class ImageLoader {
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             
             //3 when is code runs, the data task is completed. We need to remove this task from the dictionary
-            defer {self.remove(uuid) }
+            defer {self.remove(uuid)}
             
             //4
             if let data = data, let image = UIImage(data: data) {
