@@ -8,6 +8,9 @@
 
 import UIKit
 
+//typealias LoadedImages = [URL:UIImage]
+typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
+
 
 protocol ImageLoading {
     func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID?
@@ -16,11 +19,17 @@ protocol ImageLoading {
 }
 
 class ImageLoader : ImageLoading{
-    private var loadedImages = [URL:UIImage]()
+    
+    private var imagesWithUrlCache : ImagesForUrlCache
+//    private var loadedImages = [URL:UIImage]()
+
     private var runningRequests = [UUID : URLSessionDataTask]()
     private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
     
-    typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
+    
+    init(imagesWithUrlCache : ImagesForUrlCache) {
+        self.imagesWithUrlCache = imagesWithUrlCache
+    }
     
     internal func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
         
@@ -78,18 +87,24 @@ class ImageLoader : ImageLoading{
     }
     
     private func loadedImageFor(_ url: URL) -> UIImage? {
-        return dispatchQueue.sync {
-            return self.loadedImages[url]
-        }
+        imagesWithUrlCache.loadedImageFor(url)
+        
+//        return dispatchQueue.sync {
+//            return self.loadedImages[url]
+//        }
     }
     
     private func setLoadedImage(_ image: UIImage, for url: URL) {
-        dispatchQueue.sync(flags: .barrier) {
-            self.loadedImages[url] = image
-        }
+    
+        imagesWithUrlCache.setLoadedImage(image, for: url)
+//        dispatchQueue.sync(flags: .barrier) {
+//            self.loadedImages[url] = image
+//        }
     }
     
     private func remove(_ uuid: UUID) {
+        
+        
         dispatchQueue.sync(flags: .barrier) {
             let _ = self.runningRequests.removeValue(forKey: uuid)
         }
