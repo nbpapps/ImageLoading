@@ -9,18 +9,20 @@
 import UIKit
 
 class UIImageLoader {
-    static let loader = UIImageLoader()
+    internal static let loader = UIImageLoader()
     
     private let imageLoader = ImageLoader()
     private var uuidMap = [UIImageView:UUID]()
     
+    private var dispatchQueue = DispatchQueue(label: "com.nbpapps.UIImageLoader", attributes: .concurrent)
+
     private init() {}
     
-    func load(_ url : URL, for imageView : UIImageView) {
+    internal func load(_ url : URL, for imageView : UIImageView) {
         //1
         let token = imageLoader.loadImage(at: url) { (result) in
             //2
-            defer{self.uuidMap.removeValue(forKey: imageView)}
+            defer{self.remove(imageView)}
             
             do {
                 //3
@@ -36,15 +38,29 @@ class UIImageLoader {
         
         //4
         if let token = token {
-            uuidMap[imageView] = token
+//            uuidMap[imageView] = token
+            setToken(token, for: imageView)
         }
     }
     
-    func cancel(for imageView : UIImageView) {
+    internal func cancel(for imageView : UIImageView) {
         if let uuid = uuidMap[imageView] {
             imageLoader.cancelLoad(for: uuid)
             uuidMap.removeValue(forKey: imageView)
         }
     }
+    
+    private func remove(_ imageView : UIImageView) {
+        dispatchQueue.sync(flags: .barrier) {
+            let _ = self.uuidMap.removeValue(forKey: imageView)
+        }
+    }
+    
+    private func setToken(_ token: UUID, for imageView: UIImageView) {
+        dispatchQueue.sync(flags: .barrier) {
+            uuidMap[imageView] = token
+        }
+    }
+    
 }
 

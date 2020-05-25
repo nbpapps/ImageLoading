@@ -15,7 +15,7 @@ class ImageLoader {
     
     typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
     
-    func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
+    internal func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
         
         //1
         if let image = loadedImageFor(url) {
@@ -29,11 +29,7 @@ class ImageLoader {
         let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
             
             //3 when is code runs, the data task is completed. We need to remove this task from the dictionary
-            defer {
-                self.dispatchQueue.sync(flags: .barrier) {
-                    self.runningRequests.removeValue(forKey: uuid)
-                }
-            }
+            defer {self.remove(uuid) }
             
             //4
             if let data = data, let image = UIImage(data: data) {
@@ -67,7 +63,7 @@ class ImageLoader {
     }
     
     
-    func cancelLoad(for uuid : UUID) {
+    internal func cancelLoad(for uuid : UUID) {
         dispatchQueue.sync(flags: .barrier) {
             runningRequests[uuid]?.cancel()
             runningRequests.removeValue(forKey: uuid)
@@ -83,6 +79,12 @@ class ImageLoader {
     private func setLoadedImage(_ image: UIImage, for url: URL) {
         dispatchQueue.sync(flags: .barrier) {
             self.loadedImages[url] = image
+        }
+    }
+    
+    private func remove(_ uuid: UUID) {
+        dispatchQueue.sync(flags: .barrier) {
+            let _ = self.runningRequests.removeValue(forKey: uuid)
         }
     }
     
