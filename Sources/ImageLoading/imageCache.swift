@@ -7,17 +7,17 @@
 
 import UIKit
 
-struct ImagesForUrlCache {
-    static let shared = ImagesForUrlCache()
+struct ImageCache {
+    static let shared = ImageCache()
 
-    private var imagesForUrlCache = NSCache<NSString, UIImage>()
+    private var imageCache = NSCache<NSString, UIImage>()
 
     internal func loadedImageFor(_ url: URL) -> UIImage? {
-        return imagesForUrlCache.object(forKey: string(for: url))
+        return imageCache.object(forKey: string(for: url))
     }
 
     internal func setLoadedImage(_ image: UIImage, for url: URL) {
-        imagesForUrlCache.setObject(image, forKey: string(for: url))
+        imageCache.setObject(image, forKey: string(for: url))
     }
     
     private func string(for url : URL) -> NSString {

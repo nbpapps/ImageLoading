@@ -8,7 +8,6 @@
 
 import UIKit
 
-//typealias LoadedImages = [URL:UIImage]
 typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
 
 
@@ -20,15 +19,15 @@ protocol ImageLoading {
 
 class ImageLoader : ImageLoading{
     
-    private var imagesWithUrlCache : ImagesForUrlCache
-//    private var loadedImages = [URL:UIImage]()
-
-    private var runningRequests = [UUID : URLSessionDataTask]()
-    private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
+    private var imageCache : ImageCache
+    private var runningTasksCache : RunningTasksCache
+//    private var runningRequests = [UUID : URLSessionDataTask]()
+//    private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
     
     
-    init(imagesWithUrlCache : ImagesForUrlCache) {
-        self.imagesWithUrlCache = imagesWithUrlCache
+    init(imageCache : ImageCache,runningTasksCache : RunningTasksCache) {
+        self.imageCache = imageCache
+        self.runningTasksCache = runningTasksCache
     }
     
     internal func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
@@ -72,42 +71,43 @@ class ImageLoader : ImageLoading{
         
         
         //6
-        dispatchQueue.sync(flags: .barrier) {
-            runningRequests[uuid] = task
-        }
+        self.setTask(task, for: uuid)
+//        dispatchQueue.sync(flags: .barrier) {
+//            runningRequests[uuid] = task
+//        }
         return uuid
     }
     
     
     internal func cancelLoad(for uuid : UUID) {
-        dispatchQueue.sync(flags: .barrier) {
-            runningRequests[uuid]?.cancel()
-            runningRequests.removeValue(forKey: uuid)
-        }
+        runningTasksCache.cancelTask(for: uuid)
+//        dispatchQueue.sync(flags: .barrier) {
+//            runningRequests[uuid]?.cancel()
+//            runningRequests.removeValue(forKey: uuid)
+//        }
     }
     
+    //MARK: - image cache access
     private func loadedImageFor(_ url: URL) -> UIImage? {
-        imagesWithUrlCache.loadedImageFor(url)
-        
-//        return dispatchQueue.sync {
-//            return self.loadedImages[url]
-//        }
+        imageCache.loadedImageFor(url)
     }
     
     private func setLoadedImage(_ image: UIImage, for url: URL) {
+        imageCache.setLoadedImage(image, for: url)
+    }
     
-        imagesWithUrlCache.setLoadedImage(image, for: url)
-//        dispatchQueue.sync(flags: .barrier) {
-//            self.loadedImages[url] = image
-//        }
+    //MARK: - running tasks cache access
+    
+    private func setTask(_ task : URLSessionDataTask, for uuid : UUID) {
+        runningTasksCache.setRunningTask(task, for: uuid)
     }
     
     private func remove(_ uuid: UUID) {
+        runningTasksCache.remove(uuid)
         
-        
-        dispatchQueue.sync(flags: .barrier) {
-            let _ = self.runningRequests.removeValue(forKey: uuid)
-        }
+//        dispatchQueue.sync(flags: .barrier) {
+//            let _ = self.runningRequests.removeValue(forKey: uuid)
+//        }
     }
     
 }

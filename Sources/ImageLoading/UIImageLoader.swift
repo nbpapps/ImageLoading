@@ -13,7 +13,7 @@ class UIImageLoader  {
     internal static let loader = UIImageLoader()
     
     
-    private let imageLoader = ImageLoader(imagesWithUrlCache: ImagesForUrlCache.shared)
+    private let imageLoader = ImageLoader(imageCache: ImageCache.shared, runningTasksCache: RunningTasksCache.shared)
     private var uuidMap = [UIImageView:UUID]()
     
     private var dispatchQueue = DispatchQueue(label: "com.nbpapps.UIImageLoader", attributes: .concurrent)
