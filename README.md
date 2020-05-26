@@ -5,6 +5,8 @@ Image loading and canceling is handled by extentions on UIImageView.
 
 Includes caches for storing the key-value pairs of the images, the running tasks and the IDs assigned for each image view.
 
+I'd like to thank [Donny Wals](https://twitter.com/DonnyWals) for his great [post](https://www.donnywals.com/efficiently-loading-images-in-table-views-and-collection-views/) which was the insperation for this Swift Package
+
 
 ## Using it in your project.
 ```
