@@ -8,19 +8,25 @@
 
 import UIKit
 
+typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
+
 
 protocol ImageLoading {
     func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID?
     func cancelLoad(for uuid : UUID)
-
 }
 
-class ImageLoader : ImageLoading{
-    private var loadedImages = [URL:UIImage]()
-    private var runningRequests = [UUID : URLSessionDataTask]()
-    private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
+class ImageLoader : ImageLoading {
     
-    typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
+    private let imageCache : ImageCache
+    private let runningTasksCache : RunningTasksCache
+    private let session : URLSession
+    
+    init(imageCache : ImageCache,runningTasksCache : RunningTasksCache,session : URLSession = .shared) {
+        self.imageCache = imageCache
+        self.runningTasksCache = runningTasksCache
+        self.session = session
+    }
     
     internal func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
         
@@ -33,7 +39,7 @@ class ImageLoader : ImageLoading{
         //2
         let uuid = UUID()
         
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+        let task = session.dataTask(with: url) { (data, response, error) in
             
             //3 when is code runs, the data task is completed. We need to remove this task from the dictionary
             defer {self.remove(uuid)}
@@ -56,43 +62,36 @@ class ImageLoader : ImageLoading{
                 return
             }
             //the request was cancelled, no need to call the callback
-            
         }
         
         task.resume()
         
-        
         //6
-        dispatchQueue.sync(flags: .barrier) {
-            runningRequests[uuid] = task
-        }
+        self.setTask(task, for: uuid)
         return uuid
     }
     
     
     internal func cancelLoad(for uuid : UUID) {
-        dispatchQueue.sync(flags: .barrier) {
-            runningRequests[uuid]?.cancel()
-            runningRequests.removeValue(forKey: uuid)
-        }
+        runningTasksCache.cancelTask(for: uuid)
     }
     
+    //MARK: - image cache access
     private func loadedImageFor(_ url: URL) -> UIImage? {
-        return dispatchQueue.sync {
-            return self.loadedImages[url]
-        }
+        imageCache.loadedImageFor(url)
     }
     
     private func setLoadedImage(_ image: UIImage, for url: URL) {
-        dispatchQueue.sync(flags: .barrier) {
-            self.loadedImages[url] = image
-        }
+        imageCache.setLoadedImage(image, for: url)
+    }
+    
+    //MARK: - running tasks cache access
+    private func setTask(_ task : URLSessionDataTask, for uuid : UUID) {
+        runningTasksCache.setRunningTask(task, for: uuid)
     }
     
     private func remove(_ uuid: UUID) {
-        dispatchQueue.sync(flags: .barrier) {
-            let _ = self.runningRequests.removeValue(forKey: uuid)
-        }
+        runningTasksCache.remove(uuid)
     }
     
 }
