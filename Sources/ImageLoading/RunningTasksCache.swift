@@ -29,6 +29,10 @@ struct RunningTasksCache {
         runningTasksCache.removeObject(forKey: string(for: uuid))
     }
     
+    internal func getTask(for uuid : UUID) -> URLSessionDataTask? {
+        return runningTasksCache.object(forKey: string(for: uuid))
+    }
+    
     private func string(for uuid : UUID) -> NSString {
         return NSString(string: uuid.uuidString)
     }

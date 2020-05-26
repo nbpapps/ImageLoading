@@ -7,7 +7,12 @@
 
 import UIKit
 
-struct ImageCache {
+protocol ImageCaching {
+    func loadedImageFor(_ url: URL) -> UIImage?
+    func setLoadedImage(_ image: UIImage, for url: URL)
+}
+
+struct ImageCache : ImageCaching {
     static let shared = ImageCache()
 
     private var imageCache = NSCache<NSString, UIImage>()

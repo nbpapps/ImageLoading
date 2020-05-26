@@ -14,16 +14,12 @@ typealias ImageLoadedHandler = (Result<UIImage,Error>) -> Void
 protocol ImageLoading {
     func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID?
     func cancelLoad(for uuid : UUID)
-
 }
 
-class ImageLoader : ImageLoading{
+class ImageLoader : ImageLoading {
     
     private var imageCache : ImageCache
     private var runningTasksCache : RunningTasksCache
-//    private var runningRequests = [UUID : URLSessionDataTask]()
-//    private var dispatchQueue = DispatchQueue(label: "com.nbpapps.ImageLoader", attributes: .concurrent)
-    
     
     init(imageCache : ImageCache,runningTasksCache : RunningTasksCache) {
         self.imageCache = imageCache
@@ -72,19 +68,12 @@ class ImageLoader : ImageLoading{
         
         //6
         self.setTask(task, for: uuid)
-//        dispatchQueue.sync(flags: .barrier) {
-//            runningRequests[uuid] = task
-//        }
         return uuid
     }
     
     
     internal func cancelLoad(for uuid : UUID) {
         runningTasksCache.cancelTask(for: uuid)
-//        dispatchQueue.sync(flags: .barrier) {
-//            runningRequests[uuid]?.cancel()
-//            runningRequests.removeValue(forKey: uuid)
-//        }
     }
     
     //MARK: - image cache access
@@ -97,17 +86,12 @@ class ImageLoader : ImageLoading{
     }
     
     //MARK: - running tasks cache access
-    
     private func setTask(_ task : URLSessionDataTask, for uuid : UUID) {
         runningTasksCache.setRunningTask(task, for: uuid)
     }
     
     private func remove(_ uuid: UUID) {
         runningTasksCache.remove(uuid)
-        
-//        dispatchQueue.sync(flags: .barrier) {
-//            let _ = self.runningRequests.removeValue(forKey: uuid)
-//        }
     }
     
 }

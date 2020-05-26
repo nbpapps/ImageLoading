@@ -27,6 +27,14 @@ struct UuidForImageViewCache {
     internal func remove(_ imageView : UIImageView) {
         cache.removeObject(forKey: imageView)
     }
+    
+    internal func getUuid(for imageView : UIImageView) -> UUID? {
+        if let uuidString = cache.object(forKey: imageView) {
+            return UUID(uuidString: uuidString as String)
+        }
+        return nil
+    }
+    
 
     
     private func string(for uuid : UUID) -> NSString {
