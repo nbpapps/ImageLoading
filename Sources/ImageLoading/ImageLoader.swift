@@ -18,12 +18,14 @@ protocol ImageLoading {
 
 class ImageLoader : ImageLoading {
     
-    private var imageCache : ImageCache
-    private var runningTasksCache : RunningTasksCache
+    private let imageCache : ImageCache
+    private let runningTasksCache : RunningTasksCache
+    private let session : URLSession
     
-    init(imageCache : ImageCache,runningTasksCache : RunningTasksCache) {
+    init(imageCache : ImageCache,runningTasksCache : RunningTasksCache,session : URLSession = .shared) {
         self.imageCache = imageCache
         self.runningTasksCache = runningTasksCache
+        self.session = session
     }
     
     internal func loadImage(at url : URL, with completion : @escaping ImageLoadedHandler) -> UUID? {
@@ -37,7 +39,7 @@ class ImageLoader : ImageLoading {
         //2
         let uuid = UUID()
         
-        let task = URLSession.shared.dataTask(with: url) { (data, response, error) in
+        let task = session.dataTask(with: url) { (data, response, error) in
             
             //3 when is code runs, the data task is completed. We need to remove this task from the dictionary
             defer {self.remove(uuid)}
