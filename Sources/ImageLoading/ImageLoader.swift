@@ -62,11 +62,9 @@ class ImageLoader : ImageLoading {
                 return
             }
             //the request was cancelled, no need to call the callback
-            
         }
         
         task.resume()
-        
         
         //6
         self.setTask(task, for: uuid)
