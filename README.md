@@ -1,6 +1,8 @@
 # ImageLoading
 A Swift Package for loading remote images.
+
 Image loading and canceling is handled by extentions on ImageViews.
+
 Includes caches for storing the key-value pairs of the images, the running tasks and the IDs assigned for each image view.
 
 
